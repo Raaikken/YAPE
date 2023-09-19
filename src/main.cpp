@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "yape_lib.h"
 
 #include <iostream>
 
@@ -12,7 +13,7 @@ void processInput(GLFWwindow *window) {
 }
 
 int main() {
-	printf("Hello, Engine!");
+	printf("Hello, Engine!\n");
 
 	// Initialize & create the window
 	glfwInit();
@@ -22,7 +23,7 @@ int main() {
 
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Hello, World!", NULL, NULL);
 	if(window == NULL) {
-		printf("Failed to create GLFW window.");
+		printf("Failed to create GLFW window.\n");
 		glfwTerminate();
 		return -1;
 	}
@@ -30,7 +31,7 @@ int main() {
 	glfwMakeContextCurrent(window);
 
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		printf("Failed to initialize GLAD.");
+		printf("Failed to initialize GLAD.\n");
 		return -1;
 	}
 
