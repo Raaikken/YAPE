@@ -48,6 +48,10 @@ int main() {
 		// Process Inputs
 		processInput(window);
 
+		SM_TRACE("Test");
+		SM_WARN("Test");
+		SM_ERROR("Test");
+
 		// Check and call events and swap the buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
