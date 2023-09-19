@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "yape_lib.h"
 
 #include <iostream>
 
@@ -46,6 +47,10 @@ int main() {
 		
 		// Process Inputs
 		processInput(window);
+
+		SM_TRACE("Test");
+		SM_WARN("Test");
+		SM_ERROR("Test");
 
 		// Check and call events and swap the buffers
 		glfwSwapBuffers(window);
