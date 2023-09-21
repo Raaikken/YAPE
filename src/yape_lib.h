@@ -9,11 +9,16 @@
 #define DEBUG_BREAK() __debugbreak()
 #endif
 #ifdef __linux__
-#define DEBUG_BREAK() __builtin_debugtrap()
+#define DEBUG_BREAK() __builtin_trap()
 #endif
 #ifdef __APPLE__
 #define DEBUG_BREAK() __builtin_trap()
 #endif
+
+#define BIT(x) 1 << (x)
+#define KB(x) ((unsigned long long) 1024 * x)
+#define MB(x) ((unsigned long long) 1024 * KB(x))
+#define GB(x) ((unsigned long long) 1024 * MB(x))
 
 enum TextColor {
 	TEXT_COLOR_BLACK,
@@ -65,9 +70,9 @@ void _log(char* prefix, char* msg, TextColor textColor, Args... args){
 	puts(textBuffer);
 }
 
-#define SM_TRACE(msg, ...) _log("TRACE: ", msg, TEXT_COLOR_GREEN, ##__VA_ARGS__);
-#define SM_WARN(msg, ...) _log("WARNING: ", msg, TEXT_COLOR_YELLOW, ##__VA_ARGS__);
-#define SM_ERROR(msg, ...) _log("ERROR: ", msg, TEXT_COLOR_RED, ##__VA_ARGS__);
+#define SM_TRACE(msg, ...) _log((char*)"TRACE: ", (char*)msg, TEXT_COLOR_GREEN, ##__VA_ARGS__);
+#define SM_WARN(msg, ...) _log((char*)"WARNING: ", (char*)msg, TEXT_COLOR_YELLOW, ##__VA_ARGS__);
+#define SM_ERROR(msg, ...) _log((char*)"ERROR: ", (char*)msg, TEXT_COLOR_RED, ##__VA_ARGS__);
 #define SM_ASSERT(x, msg, ...) {        \
 	if(!(x)) {                          \
 		SM_ERROR(msg, ##__VA_ARGS__);   \
@@ -122,7 +127,7 @@ long long get_timestamp(char* file) {
 }
 
 bool file_exists(char* filePath) {
-	SM_ASSERT(filePath, "No filePath supplied!");
+	SM_ASSERT(filePath, (char*)"No filePath supplied!");
 
 	auto file = fopen(filePath, "rb");
 	if(!file) {
