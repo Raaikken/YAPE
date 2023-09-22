@@ -4,9 +4,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "yape_lib.h"
 
 using namespace std;
+
+const char* TEXTURE_PATH = "assets/textures/TEXTURE_ATLAS.png";
 
 static void APIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user);
 
@@ -94,26 +99,57 @@ int main() {
 	}
 	
 	unsigned int shaderProgram;
+	GLuint textureID;
 	shaderProgram = glCreateProgram();
 	
 	glAttachShader(shaderProgram, vertShaderID);
 	glAttachShader(shaderProgram, fragShaderID);
 	glLinkProgram(shaderProgram);
 
+	glDetachShader(shaderProgram, vertShaderID);
+	glDetachShader(shaderProgram, fragShaderID);
 	glDeleteShader(vertShaderID);
 	glDeleteShader(fragShaderID);
-
-	glUseProgram(shaderProgram);
 
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	// glEnable(GL_DEPTH_TEST);
-	// glDepthFunc(GL_GREATER);
+	// Load textures with STBI
+	{
+		int width, height, channels;
+		char* data = (char*)stbi_load(TEXTURE_PATH, &width, &height, &channels, 4);
+
+		if(!data) {
+			SM_ASSERT(false, "Failed to load textures!");
+			return -1;
+		}
+
+		glGenTextures(1, &textureID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		stbi_image_free(data);
+	}
+
+	glEnable(GL_FRAMEBUFFER_SRGB);
+	glDisable(GL_MULTISAMPLE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_GREATER);
+
+	glUseProgram(shaderProgram);
 
 	while(!glfwWindowShouldClose(window)) {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearDepth(0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
