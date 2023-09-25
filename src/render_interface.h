@@ -19,7 +19,7 @@ struct RenderData {
     Transform transforms[MAX_TRANSFORMS];
 };
 
-static RenderData renderData;
+static RenderData* renderData;
 
 void draw_sprite(SpriteID spriteID, Vec2 position, Vec2 size) {
     Sprite sprite = get_sprite(spriteID);
@@ -30,5 +30,5 @@ void draw_sprite(SpriteID spriteID, Vec2 position, Vec2 size) {
     transform.atlasOffset = sprite.atlasOffset;
     transform.spriteSize = sprite.spriteSize;
 
-    renderData.transforms[renderData.transformCount++] = transform;
+    renderData->transforms[renderData->transformCount++] = transform;
 }

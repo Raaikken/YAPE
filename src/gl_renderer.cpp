@@ -142,7 +142,7 @@ bool gl_init(BumpAllocator* transientStorage) {
 	{
 		glGenBuffers(1, &glContext.transformSBOID);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, glContext.transformSBOID);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Transform) * MAX_TRANSFORMS, renderData.transforms, GL_DYNAMIC_DRAW);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Transform) * MAX_TRANSFORMS, renderData->transforms, GL_DYNAMIC_DRAW);
 	}
 
 	// Uniforms
@@ -171,10 +171,10 @@ void gl_render() {
 	
 	// Opaque Objects
 	{
-		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Transform) * renderData.transformCount, renderData.transforms);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, renderData.transformCount);	
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Transform) * renderData->transformCount, renderData->transforms);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, renderData->transformCount);	
 
-		renderData.transformCount = 0;
+		renderData->transformCount = 0;
 	}
 }
 

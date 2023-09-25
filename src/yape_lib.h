@@ -7,12 +7,15 @@
 
 #ifdef _WIN32
 #define DEBUG_BREAK() __debugbreak()
+#define EXPORT_FN __declspec(dllexport)
 #endif
 #ifdef __linux__
 #define DEBUG_BREAK() __builtin_trap()
+#define EXPORT_FN
 #endif
 #ifdef __APPLE__
 #define DEBUG_BREAK() __builtin_trap()
+#define EXPORT_FN 🤷
 #endif
 
 #define BIT(x) 1 << (x)
@@ -104,7 +107,7 @@ BumpAllocator make_bump_allocator(size_t size) {
 	return ba;
 }
 
-char* bumb_alloc(BumpAllocator* bumpAllocator, size_t size) {
+char* bump_alloc(BumpAllocator* bumpAllocator, size_t size) {
 	char* result = nullptr;
 
 	size_t allignedSize = (size + 7) & ~ 7;
@@ -185,7 +188,7 @@ char* read_file(char* filePath, int* fileSize, BumpAllocator* bumpAllocator) {
 	long dummy_fileSize = get_file_size(filePath);
 
 	if(dummy_fileSize) {
-		char* buffer = bumb_alloc(bumpAllocator, dummy_fileSize + 1);
+		char* buffer = bump_alloc(bumpAllocator, dummy_fileSize + 1);
 		file = read_file(filePath, fileSize, buffer);
 	}
 
@@ -228,11 +231,11 @@ bool copy_file(char* fileName, char* outputName, char* buffer) {
 }
 
 bool copy_file(char* fileName, char* outputName, BumpAllocator* bumpAllocator) {
-	char* file = nullptr;
+	char* file = 0;
 	long dummy_fileSize = get_file_size(fileName);
 
 	if(dummy_fileSize) {
-		char* buffer = bumb_alloc(bumpAllocator, dummy_fileSize + 1);
+		char* buffer = bump_alloc(bumpAllocator, dummy_fileSize + 1);
 		return copy_file(fileName, outputName, buffer);
 	}
 
