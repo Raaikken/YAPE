@@ -15,6 +15,7 @@ struct GLContext {
 	GLuint textureID;
 	GLuint transformSBOID;
 	GLuint screenSizeID;
+	GLuint orthoProjectionID;
 };
 
 static GLContext glContext;
@@ -31,7 +32,7 @@ bool gl_init(BumpAllocator* transientStorage) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glContext.window = glfwCreateWindow(800, 600, "Yet Another Platformer Engine", NULL, NULL);
+	glContext.window = glfwCreateWindow(1200, 675, "Yet Another Platformer Engine", NULL, NULL);
 	if(glContext.window == NULL) {
 		printf("Failed to create GLFW window.\n");
 		glfwTerminate();
@@ -47,7 +48,7 @@ bool gl_init(BumpAllocator* transientStorage) {
 		return false;
 	}
 
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, 1200, 675);
 
 	glfwSetFramebufferSizeCallback(glContext.window, framebuffer_size_callback);
 	glDebugMessageCallback(&gl_debug_callback, nullptr);
@@ -58,8 +59,8 @@ bool gl_init(BumpAllocator* transientStorage) {
 	GLuint fragShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
 	int fileSize = 0;
-	char* vertShader = read_file("assets/shaders/quad.vert", &fileSize, transientStorage);
-	char* fragShader = read_file("assets/shaders/quad.frag", &fileSize, transientStorage);
+	char* vertShader = read_file((char*)"assets/shaders/quad.vert", &fileSize, transientStorage);
+	char* fragShader = read_file((char*)"assets/shaders/quad.frag", &fileSize, transientStorage);
 
 	if(!vertShader || !fragShader) {
 		SM_ASSERT(false, "Failed to load shaders!");
@@ -148,6 +149,7 @@ bool gl_init(BumpAllocator* transientStorage) {
 	// Uniforms
 	{
 		glContext.screenSizeID = glGetUniformLocation(glContext.programID, "screenSize");
+		glContext.orthoProjectionID = glGetUniformLocation(glContext.programID, "orthoProjection");
 	}
 
 	glEnable(GL_FRAMEBUFFER_SRGB);
@@ -168,7 +170,14 @@ void gl_render() {
 
 	Vec2 screenSize = {(float)screenWidth, (float)screenWidth};
 	glUniform2fv(glContext.screenSizeID, 1, &screenSize.x);
-	
+
+	OrthographicCamera2D camera = renderData->gameCamera;
+	Mat4 orthoProjection = ortographic_projection(camera.position.x - camera.dimensions.x / 2.0f,
+												  camera.position.x + camera.dimensions.x / 2.0f,
+												  camera.position.y - camera.dimensions.y / 2.0f,
+												  camera.position.y + camera.dimensions.y / 2.0f);
+	glUniformMatrix4fv(glContext.orthoProjectionID, 1, GL_FALSE, &orthoProjection.ax);
+
 	// Opaque Objects
 	{
 		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Transform) * renderData->transformCount, renderData->transforms);

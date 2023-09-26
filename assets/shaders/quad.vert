@@ -13,6 +13,7 @@ layout (std430, binding = 0) buffer TransformSBO {
 };
 
 uniform vec2 screenSize;
+uniform mat4 orthoProjection;
 
 // Output
 layout (location = 0) out vec2 textureCordinatesOut;
@@ -45,9 +46,9 @@ void main() {
 
     {
         vec2 vertexPosition = vertices[gl_VertexID];
-        vertexPosition.y = -vertexPosition.y + screenSize.y;
-        vertexPosition = 2.0 * (vertexPosition / screenSize) - 1.0;
-        gl_Position = vec4(vertexPosition, 1.0, 1.0);
+        // vertexPosition.y = -vertexPosition.y + screenSize.y;
+        // vertexPosition = 2.0 * (vertexPosition / screenSize) - 1.0;
+        gl_Position = orthoProjection * vec4(vertexPosition, 0.0, 1.0);
     }
 
     textureCordinatesOut = textureCordinates[gl_VertexID];

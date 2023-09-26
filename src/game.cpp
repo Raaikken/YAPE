@@ -2,15 +2,21 @@
 #include "assets.h"
 #include "yape_lib.h"
 
-EXPORT_FN void update_game(RenderData* renderDataIn, Input* inputIn) {
+constexpr int WORLD_WIDTH = 320;
+constexpr int WORLD_HEIGHT = 180;
+constexpr int TILESIZE = 8;
+
+EXPORT_FN void update_game(GameState* gamestateIn, RenderData* renderDataIn, Input* inputIn) {
 	if(renderData != renderDataIn) {
+		gameState = gamestateIn;
 		renderData = renderDataIn;
 		input = inputIn;
 	}
 
-	for(int x = 0; x < 10; x++) {
-		for(int y = 0; y < 10; y++) {
-			draw_sprite(SPRITE_DICE, {x * 100.0f, y * 100.0f}, {100.0f, 100.0f});
-		}
+	if(!gameState->initialized) {
+		renderData->gameCamera.dimensions = { WORLD_WIDTH, WORLD_HEIGHT };
+		gameState->initialized = true;
 	}
-}
+
+	draw_sprite(SPRITE_DICE, {0.0f, 0.0f});
+} 

@@ -19,15 +19,15 @@ bool running = true;
 typedef decltype(update_game) update_game_type;
 static update_game_type* update_game_ptr;
 
-void update_game(RenderData* renderData, Input* input) {
-	update_game_ptr(renderData, input);
+void update_game(GameState* gamestateIn, RenderData* renderDataIn, Input* inputIn) {
+	update_game_ptr(gamestateIn, renderDataIn, inputIn);
 }
 
 void reload_game_so(BumpAllocator* transientStorage) {
 	static void* gameSO;
 	static long long lastEditTimestampGameSO;
 
-	long long currentTimeStampGameSO = get_timestamp("game.so");
+	long long currentTimeStampGameSO = get_timestamp((char*)"game.so");
 
 	if(currentTimeStampGameSO > lastEditTimestampGameSO) {
 		if(gameSO) {
@@ -37,15 +37,15 @@ void reload_game_so(BumpAllocator* transientStorage) {
 			SM_TRACE("Freed game.so");
 		}
 
-		while(!copy_file("game.so", "game_load.so", transientStorage)) {
+		while(!copy_file((char*)"game.so", (char*)"game_load.so", transientStorage)) {
 			sleep(10);
 		}
 		SM_TRACE("Copied game.so into game_load.so");
 
-		gameSO = platform_load_dynamic_library("game_load.so");
+		gameSO = platform_load_dynamic_library((char*)"game_load.so");
 		SM_ASSERT(gameSO, "Failed to load game.so");
 
-		update_game_ptr = (update_game_type*)platform_load_dynamic_function(gameSO, "update_game");
+		update_game_ptr = (update_game_type*)platform_load_dynamic_function(gameSO, (char*)"update_game");
 		SM_ASSERT(update_game_ptr, "Failed to load update_game function");
 		lastEditTimestampGameSO = currentTimeStampGameSO;
 	}
@@ -77,7 +77,12 @@ int main() {
 	}
 	input = (Input*)bump_alloc(&persistentStorage, sizeof(Input));
 	if(!input) {
-		SM_ERROR("Failed to allocate RenderData");
+		SM_ERROR("Failed to allocate Input");
+		return -1;
+	}
+	gameState = (GameState*)bump_alloc(&persistentStorage, sizeof(GameState));
+	if(!gameState) {
+		SM_ERROR("Failed to allocate GameState");
 		return -1;
 	}
 
@@ -87,7 +92,7 @@ int main() {
 		reload_game_so(&transientStorage);
 
 		processInput(glContext.window);
-		update_game(renderData, input);
+		update_game(gameState, renderData, input);
 		gl_render();
 
 		// Check and call events and swap the buffers
