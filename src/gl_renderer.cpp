@@ -6,6 +6,7 @@
 
 #include "yape_lib.h"
 #include "render_interface.h"
+#include "input.h"
 
 const char* TEXTURE_PATH = "assets/textures/TEXTURE_ATLAS.png";
 
@@ -32,7 +33,7 @@ bool gl_init(BumpAllocator* transientStorage) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glContext.window = glfwCreateWindow(1200, 675, "Yet Another Platformer Engine", NULL, NULL);
+	glContext.window = glfwCreateWindow(1280, 720, "Yet Another Platformer Engine", NULL, NULL);
 	if(glContext.window == NULL) {
 		printf("Failed to create GLFW window.\n");
 		glfwTerminate();
@@ -41,17 +42,19 @@ bool gl_init(BumpAllocator* transientStorage) {
 
 	glfwMakeContextCurrent(glContext.window);
 
-	glfwGetWindowSize(glContext.window, &screenWidth, &screenHeight);
+	glfwGetWindowSize(glContext.window, &input->screenSize.x, &input->screenSize.y);
 
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		printf("Failed to initialize GLAD.\n");
 		return false;
 	}
 
-	glViewport(0, 0, 1200, 675);
+	glViewport(0, 0, input->screenSize.x, input->screenSize.y);
 
 	glfwSetFramebufferSizeCallback(glContext.window, framebuffer_size_callback);
 	glDebugMessageCallback(&gl_debug_callback, nullptr);
+    glfwSetKeyCallback(glContext.window, key_callback);
+    glfwSetCursorPosCallback(glContext.window, cursor_position_callback);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glEnable(GL_DEBUG_OUTPUT);
 
@@ -59,8 +62,8 @@ bool gl_init(BumpAllocator* transientStorage) {
 	GLuint fragShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
 	int fileSize = 0;
-	char* vertShader = read_file((char*)"assets/shaders/quad.vert", &fileSize, transientStorage);
-	char* fragShader = read_file((char*)"assets/shaders/quad.frag", &fileSize, transientStorage);
+	char* vertShader = read_file("assets/shaders/quad.vert", &fileSize, transientStorage);
+	char* fragShader = read_file("assets/shaders/quad.frag", &fileSize, transientStorage);
 
 	if(!vertShader || !fragShader) {
 		SM_ASSERT(false, "Failed to load shaders!");
@@ -163,6 +166,12 @@ bool gl_init(BumpAllocator* transientStorage) {
 	return true;
 }
 
+/* render a frame
+ * 
+ * function: gl_render
+ * param: none
+ * return: void
+*/
 void gl_render() {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClearDepth(0.0f);
@@ -187,11 +196,27 @@ void gl_render() {
 	}
 }
 
+/* calls glfwTerminate to safely terminate the window
+ * 
+ * function: gl_terminate
+ * param: none
+ * return: void
+*/
 void gl_terminate() {
 	glfwTerminate();
 }
 
+/* callback funtion for when window changes its size
+ * matches the size of the viewport to the size of the window
+ * and stores the new size into a variable
+ * 
+ * function: framebuffer_size_callback
+ * param: window, ptr to the window
+ *        width, the new width of the window
+ *        height, the new height of the window
+ * return: void
+*/
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
-	glfwGetWindowSize(glContext.window, &screenWidth, &screenHeight);
+	glfwGetWindowSize(glContext.window, &input->screenSize.x, &input->screenSize.y);
 }

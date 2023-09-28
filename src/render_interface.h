@@ -2,16 +2,16 @@
 
 #include "yape_lib.h"
 #include "assets.h"
+#include "input.h"
 
 // Constants
 constexpr int MAX_TRANSFORMS = 1000;
 
-// Structs
 struct Transform {
-	IVec2 atlasOffset;
-	IVec2 spriteSize;
-	Vec2 position;
-	Vec2 size;
+	IVec2 atlasOffset;      // top left corner of the sprite in the sprite atlas
+	IVec2 spriteSize;       // the size of the sprite in the sprite atlas
+	Vec2 position;          // where the sprite is drawn in relation to the centre of the camera
+	Vec2 size;              // size of the sprite
 };
 
 struct OrthographicCamera2D {
@@ -30,6 +30,31 @@ struct RenderData {
 
 static RenderData* renderData;
 
+/* converts a position on screen to a game world position
+ * 
+ * function: screen_to_world
+ * param: screePosition, position on the screen
+ * returns: Vec2
+*/
+DVec2 screen_to_world(DVec2 screePosition) {
+    OrthographicCamera2D camera = renderData->gameCamera;
+
+    float xPos = (float)screePosition.x / (float)input->screenSize.x * camera.dimensions.x;
+    xPos += -camera.dimensions.x / 2.0f + camera.position.x;
+
+    float yPos = (float)screePosition.y / (float)input->screenSize.y * camera.dimensions.y;
+    yPos += -camera.dimensions.y / 2.0f + camera.position.y;
+
+    return { xPos, yPos };
+}
+
+/* draws a sprite
+ * 
+ * function: draw_sprite
+ * param: spriteID, The sprite to be drawn
+ *        position, position to which the sprite is drawn (centralized)
+ * returns: void
+*/
 void draw_sprite(SpriteID spriteID, Vec2 position) {
 	Sprite sprite = get_sprite(spriteID);
 
@@ -40,4 +65,15 @@ void draw_sprite(SpriteID spriteID, Vec2 position) {
 	transform.spriteSize = sprite.spriteSize;
 
 	renderData->transforms[renderData->transformCount++] = transform;
+}
+
+/* draws a sprite
+ * 
+ * function: draw_sprite
+ * param: spriteID, The sprite to be drawn
+ *        position, position to which the sprite is drawn (centralized)
+ * returns: void
+*/
+void draw_sprite(SpriteID spriteID, IVec2 position) {
+    draw_sprite(spriteID, IVec2ToVec2(position));
 }
