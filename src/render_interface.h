@@ -5,7 +5,6 @@
 #include "input.h"
 
 // Constants
-constexpr int MAX_TRANSFORMS = 1000;
 
 struct Transform {
 	IVec2 atlasOffset;      // top left corner of the sprite in the sprite atlas
@@ -24,8 +23,7 @@ struct RenderData {
 	OrthographicCamera2D gameCamera;
 	OrthographicCamera2D uiCamera;
 
-	int transformCount;
-	Transform transforms[MAX_TRANSFORMS];
+    Array<Transform, 1000> transforms;
 };
 
 static RenderData* renderData;
@@ -43,9 +41,37 @@ DVec2 screen_to_world(DVec2 screePosition) {
     xPos += -camera.dimensions.x / 2.0f + camera.position.x;
 
     float yPos = (float)screePosition.y / (float)input->screenSize.y * camera.dimensions.y;
-    yPos += -camera.dimensions.y / 2.0f + camera.position.y;
+    yPos += camera.dimensions.y / 2.0f + camera.position.y;
 
     return { xPos, yPos };
+}
+
+
+/* draws a plain white quad
+ * 
+ * function: draw_quad
+ * param: position, position of the sprite
+ *        size, size of the sprite
+ * returns: void
+*/
+void draw_quad(Vec2 position, Vec2 size) {
+    Transform transform = {};
+    transform.position = position - size / 2.0f;
+    transform.size = size;
+    transform.atlasOffset = { 0, 0 };
+    transform.spriteSize = { 1, 1 };
+
+    renderData->transforms.add(transform);
+}
+
+/* draws a quad part of tile set
+ * 
+ * function: draw_quad
+ * param: transform, transform of the tile drawn
+ * returns: void
+*/
+void draw_quad(Transform transform) {
+    renderData->transforms.add(transform);
 }
 
 /* draws a sprite
@@ -64,7 +90,7 @@ void draw_sprite(SpriteID spriteID, Vec2 position) {
 	transform.atlasOffset = sprite.atlasOffset;
 	transform.spriteSize = sprite.spriteSize;
 
-	renderData->transforms[renderData->transformCount++] = transform;
+    renderData->transforms.add(transform);
 }
 
 /* draws a sprite

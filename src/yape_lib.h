@@ -281,19 +281,77 @@ bool copy_file(const char* fileName, const char* outputName, BumpAllocator* bump
 // #### //
 
 struct Vec2 {
-    float x;
-    float y;
+    float x, y;
 
-    Vec2 operator/(float scalar) {
-        return { x / scalar, y / scalar };
+    Vec2(float x, float y)
+        : x(x), y(y) {}
+
+    Vec2()
+        : x(0), y(0) {}
+
+    // Operator Overloads
+    Vec2 Add(const Vec2& other) const {
+        return Vec2(x + other.x, y + other.y);
+    }
+    Vec2 operator+(const Vec2& other) const {
+        return Add(other);
+    }
+    void operator+=(Vec2 other) {
+        x += other.x;
+        y += other.y;
     }
 
-    Vec2 operator-(Vec2 other) {
-        return { x - other.x, y - other.y };
+    Vec2 Subtract(const Vec2& other) const {
+        return Vec2(x - other.x, y - other.y);
+    }
+    Vec2 operator-(const Vec2& other) const {
+        return Subtract(other);
+    }
+    void operator-=(Vec2 other) {
+        x -= other.x;
+        y -= other.y;
     }
 
-    Vec2 operator+(Vec2 other) {
-        return { x + other.x, y + other.y };
+    Vec2 Divide(const float& scalar) const {
+        return Vec2(x / scalar, y / scalar);
+    }
+    Vec2 operator/(const float& scalar) const {
+        return Divide(scalar);
+    }
+    void operator/=(const float& scalar) {
+        x /= scalar;
+        y /= scalar;
+    }
+    Vec2 Divide(const Vec2& scalar) const {
+        return Vec2(x / scalar.x, y / scalar.y);
+    }
+    Vec2 operator/(const Vec2& scalar) const {
+        return Divide(scalar);
+    }
+    void operator/=(const Vec2& scalar) {
+        x /= scalar.x;
+        y /= scalar.y;
+    }
+
+    Vec2 Multiply(const float& multiplier) const {
+        return Vec2(x / multiplier, y / multiplier);
+    }
+    Vec2 operator*(const float& multiplier) const {
+        return Multiply(multiplier);
+    }
+    void operator*=(const float& multiplier) {
+        x *= multiplier;
+        y *= multiplier;
+    }
+    Vec2 Multiply(const Vec2& multiplier) const {
+        return Vec2(x * multiplier.x, y * multiplier.y);
+    }
+    Vec2 operator*(const Vec2& multiplier) const {
+        return Multiply(multiplier);
+    }
+    void operator*=(const Vec2& multiplier) {
+        x /= multiplier.x;
+        y /= multiplier.y;
     }
 };
 
@@ -319,6 +377,10 @@ Vec2 IVec2ToVec2(IVec2 v) {
     return Vec2{(float)v.x, (float)v.y};
 }
 
+IVec2 DVec2ToIVec2(DVec2 v) {
+    return IVec2{ (int)v.x, (int)v.y };
+}
+
 struct Vec4 {
     union {
         float values[4];
@@ -341,6 +403,18 @@ struct Vec4 {
     float& operator[](int idx) {
         return values[idx];
     }
+};
+
+class CVec2 {
+public:
+    float x;
+    float y;
+
+    CVec2();
+
+    
+private:
+
 };
 
 struct Mat4 {

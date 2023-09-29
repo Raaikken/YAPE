@@ -41,6 +41,15 @@ void key_callback(GLFWwindow* window, int keyCode, int scancode, int action, int
     key->halfTansitionCount++;
 }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    Key* key = &input->keys[button];
+    bool isDown = (action == GLFW_REPEAT || action == GLFW_PRESS);
+    key->justPressed = !key->justPressed && !key->isDown && isDown;
+    key->justReleased = !key->justReleased && key->isDown && isDown;
+    key->isDown = isDown;
+    key->halfTansitionCount++;
+}
+
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     input->prevMousePos = input->mousePos;
 

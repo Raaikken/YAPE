@@ -12,8 +12,6 @@
 #include "platform.cpp"
 #include "platform.h"
 
-using namespace std;
-
 bool running = true;
 
 typedef decltype(update_game) update_game_type;
@@ -119,7 +117,7 @@ int main() {
 
         processInput(glContext.window);
         update_game(gameState, renderData, input);
-        gl_render();
+        gl_render(&transientStorage);
 
         // Check and call events and swap the buffers
         glfwSwapBuffers(glContext.window);

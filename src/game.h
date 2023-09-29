@@ -4,6 +4,11 @@
 #include "yape_lib.h"
 #include "render_interface.h"
 
+constexpr int WORLD_WIDTH = 320;
+constexpr int WORLD_HEIGHT = 180;
+constexpr int TILESIZE = 8;
+constexpr IVec2 WORLD_GRID { WORLD_WIDTH / TILESIZE, WORLD_HEIGHT / TILESIZE };
+
 enum GameInputType {
     MOVE_UP,
     MOVE_DOWN,
@@ -12,6 +17,10 @@ enum GameInputType {
     MOVE_JUMP,
     MOVE_DASH,
 
+    MOUSE_PRIMARY,
+    MOUSE_SECONDARY,
+    MOUSE_MIDDLE,
+
     GAME_INPUT_COUNT
 };
 
@@ -19,10 +28,17 @@ struct KeyMapping {
     Array<GLuint, 3> keys;
 };
 
+struct Tile {
+    int neighbourMask;
+    bool isVisible;
+};
+
 struct GameState {
     bool initialized = false;
     Vec2 playerPos;
 
+    Array<IVec2, 21> tileCordinates;
+    Tile worldGrid[WORLD_GRID.x][WORLD_GRID.y];
     KeyMapping keyMappings[GAME_INPUT_COUNT];
 };
 
