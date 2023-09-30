@@ -120,31 +120,15 @@ void update_tileset() {
             else {
                 tile->neighbourMask = tile->neighbourMask & 0b1111;
             }
-
-            Transform transform = {};
-            transform.position = { x * (float)TILESIZE, y * (float)TILESIZE };
-            transform.size = { 8, 8 };
-            transform.spriteSize = { 8, 8 };
-            transform.atlasOffset = gameState->tileCordinates[tile->neighbourMask];
-            draw_quad(transform);
         }
     }
 }
 
-
-EXPORT_FN void update_game(GameState* gameStateIn, RenderData* renderDataIn, Input* inputIn) {
-	if(renderData != renderDataIn) {
-		gameState = gameStateIn;
-		renderData = renderDataIn;
-		input = inputIn;
-	}
-
-	if(!gameState->initialized) {
-		initialize_game();
-	}
-
-    int speed = 1;
+void simulate() {
+    int speed = 2;
     Vec2 direction;
+
+    gameState->player.prevPosition = gameState->player.position;
 
     if(is_down(MOVE_LEFT)) {
         //gameState->playerPos.x -= speed;
@@ -163,19 +147,34 @@ EXPORT_FN void update_game(GameState* gameStateIn, RenderData* renderDataIn, Inp
         direction.y = speed;
     }
 
-    gameState->playerPos += direction;
+    gameState->player.position += direction;
 
     // float posX = input->mousePosWorld.x;
     // float posY = input->mousePosWorld.y;
 
-    // gameState->playerPos = { posX, posY };
-    
+    // gameState->player.position = { posX, posY };
+}
+
+
+EXPORT_FN void update_game(GameState* gameStateIn, RenderData* renderDataIn, Input* inputIn, float dt) {
+	if(renderData != renderDataIn) {
+		gameState = gameStateIn;
+		renderData = renderDataIn;
+		input = inputIn;
+	}
+
+	if(!gameState->initialized) {
+		initialize_game();
+	}
+
+    bool updateTiles = false;
     if(is_down(MOUSE_PRIMARY)) {
         IVec2 mousePosWorld = DVec2ToIVec2(input->mousePosWorld);
         Tile* tile = get_tile(mousePosWorld);
 
         if(tile) {
             tile->isVisible = true;
+            updateTiles = true;
         }
     }
 
@@ -185,9 +184,48 @@ EXPORT_FN void update_game(GameState* gameStateIn, RenderData* renderDataIn, Inp
 
         if(tile) {
             tile->isVisible = false;
+            updateTiles = true;
         }
     }
+
+    if(updateTiles) {
+        update_tileset();
+    }
+
+    {
+        gameState->updateTimer += dt;
+        while(gameState->updateTimer >= UPDATE_DELAY) {
+            gameState->updateTimer -= UPDATE_DELAY;
+            simulate();
+
+            input->relMousePos = input->mousePos - input->prevMousePos;
+            input->prevMousePos = input->mousePos;
+
+            clearKeyCodes();
+        }
+    }
+
+    float interpolatedDT = (float)(gameState->updateTimer / UPDATE_DELAY);
+
+    for(int y = 0; y < WORLD_GRID.y; y++) {
+        for(int x = 0; x < WORLD_GRID.x; x++) {
+            Tile* tile = get_tile(x, y);
+
+            if(!tile->isVisible) {
+                continue;
+            }
+
+            Transform transform = {};
+            transform.position = { x * (float)TILESIZE, y * (float)TILESIZE };
+            transform.size = { 8, 8 };
+            transform.spriteSize = { 8, 8 };
+            transform.atlasOffset = gameState->tileCordinates[tile->neighbourMask];
+            draw_quad(transform);
+        }
+    }
+
+    Player& player = gameState->player;
+    Vec2 playerPos = lerp(player.prevPosition, player.position, interpolatedDT);
 	
-    update_tileset();
-    draw_sprite(SPRITE_ORANGE, gameState->playerPos);
+    draw_sprite(SPRITE_ORANGE, playerPos);
 }

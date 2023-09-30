@@ -24,3 +24,7 @@ bool platform_free_dynamic_library(void* handle) {
 
 	return !freeResult;
 }
+
+void platform_set_vsync(bool vsync) {
+    glfwSwapInterval(vsync ? 60 : 0 );
+}

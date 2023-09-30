@@ -50,12 +50,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     key->halfTansitionCount++;
 }
 
-static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    input->prevMousePos = input->mousePos;
-
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     input->mousePos.x = xpos;
     input->mousePos.y = ypos;
-    input->relMousePos = input->mousePos - input->prevMousePos;
 
     input->mousePosWorld = screen_to_world(input->mousePos);
 }

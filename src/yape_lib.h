@@ -280,6 +280,10 @@ bool copy_file(const char* fileName, const char* outputName, BumpAllocator* bump
 // MATH //
 // #### //
 
+float lerp(float a, float b, float t) {
+    return a + (b - a) * t;
+}
+
 struct Vec2 {
     float x, y;
 
@@ -353,6 +357,13 @@ struct Vec2 {
         x /= multiplier.x;
         y /= multiplier.y;
     }
+};
+
+Vec2 lerp(Vec2 a, Vec2 b, float t) {
+    Vec2 result;
+    result.x = lerp(a.x, b.x, t);
+    result.y = lerp(a.y, b.y, t);
+    return result;
 };
 
 struct IVec2 {

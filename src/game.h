@@ -4,6 +4,8 @@
 #include "yape_lib.h"
 #include "render_interface.h"
 
+constexpr int UPDATES_PER_SECOND = 60;
+constexpr double UPDATE_DELAY = 1.0 / UPDATES_PER_SECOND;
 constexpr int WORLD_WIDTH = 320;
 constexpr int WORLD_HEIGHT = 180;
 constexpr int TILESIZE = 8;
@@ -33,9 +35,15 @@ struct Tile {
     bool isVisible;
 };
 
+struct Player {
+    Vec2 position;
+    Vec2 prevPosition;
+};
+
 struct GameState {
+    float updateTimer;
     bool initialized = false;
-    Vec2 playerPos;
+    Player player;
 
     Array<IVec2, 21> tileCordinates;
     Tile worldGrid[WORLD_GRID.x][WORLD_GRID.y];
@@ -53,5 +61,5 @@ extern "C" {
     *        inputIn, ptr to the input system
     * returns: void
     */
-    EXPORT_FN void update_game(GameState* gamestateIn, RenderData* renderDataIn, Input* inputIn);
+    EXPORT_FN void update_game(GameState* gamestateIn, RenderData* renderDataIn, Input* inputIn, float dt);
 }

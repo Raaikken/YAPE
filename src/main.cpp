@@ -11,14 +11,31 @@
 #include "game.h"
 #include "platform.cpp"
 #include "platform.h"
+#include <chrono>
 
 bool running = true;
 
 typedef decltype(update_game) update_game_type;
 static update_game_type* update_game_ptr;
 
-void update_game(GameState* gamestateIn, RenderData* renderDataIn, Input* inputIn) {
-    update_game_ptr(gamestateIn, renderDataIn, inputIn);
+void update_game(GameState* gamestateIn, RenderData* renderDataIn, Input* inputIn, float dt) {
+    update_game_ptr(gamestateIn, renderDataIn, inputIn, dt);
+}
+
+/* returns time between frames
+ * 
+ * function: get_delta_time
+ * param: none
+ * return: double 
+*/
+double get_delta_time() {
+    static auto lastTime = std::chrono::steady_clock::now();
+    auto currentTime = std::chrono::steady_clock::now();
+
+    double delta = std::chrono::duration<double>(currentTime - lastTime).count();
+    lastTime = currentTime;
+
+    return delta;
 }
 
 /* Reloads game file which contains the game logic
@@ -89,6 +106,8 @@ static void APIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GL
 }
 
 int main() {
+    get_delta_time();
+
     BumpAllocator transientStorage = make_bump_allocator(MB(50));
     BumpAllocator persistentStorage = make_bump_allocator(MB(50));
 
@@ -108,20 +127,21 @@ int main() {
         return -1;
     }
 
+
     gl_init(&transientStorage);
 
     while(!glfwWindowShouldClose(glContext.window)) {
+        float dt = get_delta_time();
         reload_game(&transientStorage);
         glfwGetCursorPos(glContext.window, &input->mousePos.x, &input->mousePos.y);
         glfwPollEvents();
 
         processInput(glContext.window);
-        update_game(gameState, renderData, input);
+        update_game(gameState, renderData, input, dt);
         gl_render(&transientStorage);
 
         // Check and call events and swap the buffers
         glfwSwapBuffers(glContext.window);
-        clearKeyCodes();
 
         transientStorage.used = 0;
     }

@@ -73,6 +73,7 @@ bool gl_init(BumpAllocator* transientStorage) {
     }
 
     glfwMakeContextCurrent(glContext.window);
+    glfwSwapInterval(1);
 
     glfwGetWindowSize(glContext.window, &input->screenSize.x, &input->screenSize.y);
 
